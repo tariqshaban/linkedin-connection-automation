@@ -1,0 +1,12 @@
+{
+  "webDriver": "edge",
+  "maximumConnections": -1,
+  "profileNames": {},
+  "endpoints": {
+    "longin": {
+      "url": "https://www.linkedin.com/login",
+      "usernameElementId": "username",
+      "passwordElementId": "password"
+    }
+  }
+}

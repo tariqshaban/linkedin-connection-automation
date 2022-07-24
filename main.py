@@ -1,0 +1,3 @@
+from components.authentication_handler import AuthenticationHandler
+
+AuthenticationHandler.login()
