@@ -12,10 +12,15 @@ class AuthenticationHandler:
 
     @staticmethod
     def login():
-        username, password = AuthenticationHandler.__request_credentials()
+        login_configuration = ConfigurationHandler.get_configuration()['endpoints']['longin']
+
+        username = login_configuration['username']
+        password = login_configuration['password']
+
+        if not username or not password:
+            username, password = AuthenticationHandler.__request_credentials()
 
         driver = DriverHandler.get_driver()
-        login_configuration = ConfigurationHandler.get_configuration()['endpoints']['longin']
         url = login_configuration['url']
 
         driver.get(url)

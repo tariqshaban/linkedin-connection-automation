@@ -13,11 +13,13 @@ Install the required Python dependencies by running the following command `pip i
 
 Adjust the following critical parameters in `config.json`:
 
-| Key                  | Description                                                                             |
-|----------------------|-----------------------------------------------------------------------------------------|
-| `webDriver`          | Specify the desired webdriver                                                           |
-| `maximumConnections` | Specify the threshold of processed connections before stopping, set to -1 for unlimited |
-| `profileNames`       | Specify the profile name(s) to iterate                                                  |
+| Key                                           | Description                                                                                                                                             |
+|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `webDriver`                                   | Specify the desired webdriver                                                                                                                           |
+| `maximumConnections`                          | Specify the threshold of processed connections before stopping, set to -1 for unlimited                                                                 |
+| `profileNames`                                | Specify the profile name(s) to iterate                                                                                                                  |
+| `endpoints`&#10132;`longin`&#10132;`username` | Specify the username. *Optional*, useful since the username will not be required every runtime, **insecure** since credentials are saved in a raw file. |
+| `endpoints`&#10132;`longin`&#10132;`password` | Specify the password. *Optional*, useful since the password will not be required every runtime, **insecure** since credentials are saved in a raw file. |
 
 Supported web drivers:
 

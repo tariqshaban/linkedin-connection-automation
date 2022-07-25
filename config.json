@@ -5,6 +5,8 @@
   "endpoints": {
     "longin": {
       "url": "https://www.linkedin.com/login",
+      "username": "",
+      "password": "",
       "usernameElementId": "username",
       "passwordElementId": "password"
     }
