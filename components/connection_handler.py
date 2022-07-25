@@ -43,63 +43,72 @@ class ConnectionHandler:
             ConfigurationHandler.get_configuration()['endpoints']['companyPeople']
 
         driver = DriverHandler.get_driver()
-        url = received_invitations_configuration['url']
-        url = url.replace('COMPANY_NAME', company_name)
 
-        driver.get(url)
+        companies = []
 
-        WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']) \
-            .until(EC.presence_of_element_located((By.CLASS_NAME, received_invitations_configuration['nameClass'])))
+        if isinstance(company_name, str):
+            companies.append(company_name)
+        else:
+            companies = company_name
 
-        names = []
-        headlines = []
-        links = []
+        for company in companies:
+            url = received_invitations_configuration['url']
+            url = url.replace('COMPANY_NAME', company)
 
-        counter = 0
-        maximum_connections = ConfigurationHandler.get_configuration()['maximumConnections']
-        prev_len = 0
+            driver.get(url)
 
-        while counter < maximum_connections or maximum_connections == -1:
-            people = driver.find_element_by_class_name(received_invitations_configuration['listClass']) \
-                .find_elements_by_tag_name("li")
+            WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']) \
+                .until(EC.presence_of_element_located((By.CLASS_NAME, received_invitations_configuration['nameClass'])))
 
-            for i in range(counter, len(people)):
-                try:
-                    name = people[i].find_element_by_class_name(received_invitations_configuration['nameClass'])
-                    headline = people[i].find_element_by_class_name(received_invitations_configuration['headlineClass'])
-                    link = people[i].find_element_by_class_name(received_invitations_configuration['linkClass'])
-                except NoSuchElementException:
-                    continue
+            names = []
+            headlines = []
+            links = []
 
-                if name in names:
-                    continue
+            counter = 0
+            maximum_connections = ConfigurationHandler.get_configuration()['maximumConnections']
+            prev_len = 0
 
-                names.append(name)
-                headlines.append(headline)
-                links.append(link)
+            while counter < maximum_connections or maximum_connections == -1:
+                people = driver.find_element_by_class_name(received_invitations_configuration['listClass']) \
+                    .find_elements_by_tag_name("li")
 
-                counter += 1
-                if counter >= maximum_connections != -1:
+                for i in range(counter, len(people)):
+                    try:
+                        name = people[i].find_element_by_class_name(received_invitations_configuration['nameClass'])
+                        headline = people[i].find_element_by_class_name(received_invitations_configuration['headlineClass'])
+                        link = people[i].find_element_by_class_name(received_invitations_configuration['linkClass'])
+                    except NoSuchElementException:
+                        continue
+
+                    if name in names:
+                        continue
+
+                    names.append(name)
+                    headlines.append(headline)
+                    links.append(link)
+
+                    counter += 1
+                    if counter >= maximum_connections != -1:
+                        break
+
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                sleep(received_invitations_configuration['scrollDelay'])
+
+                if prev_len == len(people):
                     break
+                prev_len = len(people)
 
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            sleep(received_invitations_configuration['scrollDelay'])
+            names = [name.get_attribute('innerText') for name in names]
+            headlines = [headline.get_attribute('innerText') for headline in headlines]
+            links = [link.get_attribute('href') for link in links]
 
-            if prev_len == len(people):
-                break
-            prev_len = len(people)
+            df = pd.DataFrame(
+                {'Name': names,
+                 'HeadLine': headlines,
+                 'Link': links
+                 })
 
-        names = [name.get_attribute('innerText') for name in names]
-        headlines = [headline.get_attribute('innerText') for headline in headlines]
-        links = [link.get_attribute('href') for link in links]
-
-        df = pd.DataFrame(
-            {'Name': names,
-             'HeadLine': headlines,
-             'Link': links
-             })
-
-        df.to_csv(f'./out/Company People - {company_name}.csv', index=False)
+            df.to_csv(f'./out/Company People - {company}.csv', index=False)
 
     @staticmethod
     def accept_received_invitations():
