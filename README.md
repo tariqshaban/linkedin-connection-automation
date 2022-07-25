@@ -13,13 +13,14 @@ Install the required Python dependencies by running the following command `pip i
 
 Adjust the following critical parameters in `config.json`:
 
-| Key                                           | Description                                                                                                                                             |
-|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `webDriver`                                   | Specify the desired webdriver                                                                                                                           |
-| `maximumConnections`                          | Specify the threshold of processed connections before stopping, set to -1 for unlimited                                                                 |
-| `profileNames`                                | Specify the profile name(s) to iterate                                                                                                                  |
-| `endpoints`&#10132;`longin`&#10132;`username` | Specify the username. *Optional*, useful since the username will not be required every runtime, **insecure** since credentials are saved in a raw file. |
-| `endpoints`&#10132;`longin`&#10132;`password` | Specify the password. *Optional*, useful since the password will not be required every runtime, **insecure** since credentials are saved in a raw file. |
+| Key                                           | Description                                                                                                                                                 |
+|-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `webDriver`                                   | Specify the desired webdriver                                                                                                                               |
+| `maximumConnections`                          | Specify the threshold of processed connections before stopping (for each method), set to -1 for unlimited                                                   |
+| `webLoadDelay`                                | Specify the number of seconds to wait till a website is loaded successfully (compensates for slow internet connections), throws an exception when times out |
+| `profileNames`                                | Specify the profile name(s) to iterate                                                                                                                      |
+| `endpoints`&#10132;`longin`&#10132;`username` | Specify the username. *Optional*, useful since the username will not be required every runtime, **insecure** since credentials are saved in a raw file.     |
+| `endpoints`&#10132;`longin`&#10132;`password` | Specify the password. *Optional*, useful since the password will not be required every runtime, **insecure** since credentials are saved in a raw file.     |
 
 Supported web drivers:
 
@@ -29,13 +30,7 @@ Supported web drivers:
 * Opera `opera`
 * Google Chrome `chrome`
 
-The website structure may change in time, modify the following values in `config.json` if it caused breaking changes:
-
-| Key                                                    | Description                                |
-|--------------------------------------------------------|--------------------------------------------|
-| `endpoints`&#10132;`longin`&#10132;`url`               | Specify the login URL                      |
-| `endpoints`&#10132;`longin`&#10132;`usernameElementId` | Specify the username HTML input element ID |
-| `endpoints`&#10132;`longin`&#10132;`passwordElementId` | Specify the password HTML input element ID |
+The website structure may change in time, modify the values in `config.json` accordingly if it caused breaking changes.
 
 Usage
 ------------
@@ -49,15 +44,39 @@ AuthenticationHandler.login() # ==> Must be invoked first
 # Redirects to 'https://www.linkedin.com/mynetwork/' and connects to all profiles under the 'More suggestions for you' section
 ConnectionHandler.connect_to_suggestion()
 
-# Fetches a specified profile(s) by their name(s) in the URL and connects to all of their connections
-ConnectionHandler.connect_to_all_profile_connections(profile_name: str)
+# Similar to connect_to_suggestion(), however, returns a CSV file concerning the people's information instead of connecting
+ConnectionHandler.get_suggestions()
 
-# Fetches a specified profile(s) by their name(s) in the URL and retrieves all of their connections
-ConnectionHandler.get_profile_connections(profile_name: str)
+# Fetches a specified profile(s) by their name(s) in the URL and connects to all of their connections
+ConnectionHandler.connect_to_profile_connections(profile_name: Union[str, list[str]], depth=1)
+
+# Similar to connect_to_profile_connections(), however, returns a CSV file concerning the people's information instead of connecting
+ConnectionHandler.get_profile_connections(profile_name: Union[str, list[str]], depth=1)
+
+# Retrieves all of the specified company's/companies' people, and connects to them
+ConnectionHandler.connect_to_company_people(company_name: Union[str, list[str]])
+
+# Similar to connect_to_company_people(), however, returns a CSV file concerning the people's information instead of connecting
+ConnectionHandler.get_company_people(company_name: Union[str, list[str]])
+
+# Accepts all incoming connection requests
+ConnectionHandler.accept_received_invitations()
+
+# Ignores all incoming connection requests
+ConnectionHandler.ignore_received_invitations()
+
+# Similar to accept_received_invitations() and ignore_received_invitations(), however, returns a CSV file concerning the people's information instead of accepting/ignoring
+ConnectionHandler.get_received_invitations()
+
+# Withdraws all outgoing connection requests
+ConnectionHandler.withdraw_sent_invitations() # ==> Warning, LinkedIn will not permit reconnecting to the same profile for three weeks
+
+# Similar to withdraw_sent_invitations(), however, returns a CSV file concerning the people's information instead of withdrawing
+ConnectionHandler.get_sent_invitations()
 ```
 
 Note that the `profile_name` argument is not the real profile name at the webpage, but rather the **user's denoted URL
-profile name**
+profile name**, similar concept applies to `company_name`.
 
 Disclaimer
 ------------

@@ -1,6 +1,7 @@
 {
   "webDriver": "edge",
   "maximumConnections": -1,
+  "webLoadDelay": 5,
   "profileNames": {},
   "endpoints": {
     "longin": {
@@ -9,6 +10,37 @@
       "password": "",
       "usernameElementId": "username",
       "passwordElementId": "password"
+    },
+    "companyPeople": {
+      "url": "https://www.linkedin.com/company/COMPANY_NAME/people/",
+      "listClass": "display-flex.list-style-none.flex-wrap",
+      "nameClass": "org-people-profile-card__profile-title",
+      "headlineClass": "lt-line-clamp.lt-line-clamp--multi-line.ember-view",
+      "linkClass": "ember-view.link-without-visited-state",
+      "connectInnerHTML": "Connect",
+      "messageInnerHTML": "Message",
+      "undisclosedAccount": "LinkedIn Member",
+      "connectDelay": 1,
+      "scrollDelay": 2
+    },
+    "receivedInvitations": {
+      "url": "https://www.linkedin.com/mynetwork/invitation-manager/",
+      "nameClass": "invitation-card__title",
+      "headlineClass": "invitation-card__subtitle",
+      "linkClass": "invitation-card__link",
+      "acceptInnerHTML": "Ignore",
+      "ignoreInnerHTML": "Accept",
+      "acceptDelay": 1,
+      "ignoreDelay": 1
+    },
+    "sentInvitations": {
+      "url": "https://www.linkedin.com/mynetwork/invitation-manager/sent/",
+      "nameClass": "invitation-card__title",
+      "headlineClass": "invitation-card__subtitle",
+      "linkClass": "invitation-card__link",
+      "withdrawInnerHTML": "Withdraw",
+      "withdrawConfirmationInnerHTML": "Withdraw",
+      "withdrawDelay": 1
     }
   }
 }

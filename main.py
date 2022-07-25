@@ -1,3 +1,4 @@
 from components.authentication_handler import AuthenticationHandler
+from components.connection_handler import ConnectionHandler
 
 AuthenticationHandler.login()
