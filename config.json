@@ -1,6 +1,7 @@
 {
   "webDriver": "edge",
   "maximumConnections": -1,
+  "securityVerificationDelay": 0,
   "webLoadDelay": 5,
   "companyNames": [],
   "profileNames": [],
@@ -21,6 +22,17 @@
       "visibleConnectParentElement": "button",
       "hiddenConnectParentElement": "div",
       "closeDelay": 1
+    },
+    "suggestions": {
+      "url": "https://www.linkedin.com/mynetwork/",
+      "headerInnerHTML": "More suggestions for you",
+      "listClass": "discover-fluid-entity-list.discover-fluid-entity-list--default-width-cards",
+      "nameClass": "discover-person-card__name",
+      "headlineClass": "discover-person-card__occupation",
+      "linkClass": "ember-view.discover-entity-type-card__link",
+      "connectInnerHTML": "Connect",
+      "connectDelay": 1,
+      "scrollDelay": 1
     },
     "companyPeople": {
       "url": "https://www.linkedin.com/company/COMPANY_NAME/people/",

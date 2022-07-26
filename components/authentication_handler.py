@@ -1,3 +1,5 @@
+from time import sleep
+
 import pyautogui as pyautogui
 
 from providers.configuration_handler import ConfigurationHandler
@@ -41,3 +43,5 @@ class AuthenticationHandler:
         del password
 
         username_field.submit()
+
+        sleep(ConfigurationHandler.get_configuration()['endpoints'])

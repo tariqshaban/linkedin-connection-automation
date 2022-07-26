@@ -68,8 +68,78 @@ class ConnectionHandler:
             sleep(user_configuration['closeDelay'])
 
     @staticmethod
-    def handle_to_suggestions(connect: bool = False):
-        raise NotImplementedError
+    def handle_suggestions(connect: bool = False):
+        suggestions_configuration = \
+            ConfigurationHandler.get_configuration()['endpoints']['suggestions']
+
+        driver = DriverHandler.get_driver()
+
+        url = suggestions_configuration['url']
+
+        driver.get(url)
+
+        WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']) \
+            .until(EC.presence_of_element_located((By.CLASS_NAME, suggestions_configuration['nameClass'])))
+
+        names = []
+        headlines = []
+        links = []
+
+        counter = 0
+        maximum_connections = ConfigurationHandler.get_configuration()['maximumConnections']
+        prev_len = 0
+
+        while len(names) < maximum_connections or maximum_connections == -1:
+            suggestion_section = driver.find_element(
+                By.XPATH,
+                '//*[text()="' + suggestions_configuration['headerInnerHTML'] + '"]'
+            ).find_element_by_xpath('..').find_element_by_xpath('..')
+            people = suggestion_section.find_element_by_class_name(suggestions_configuration['listClass']) \
+                .find_elements_by_tag_name('li')
+
+            for i in range(counter, len(people)):
+                counter += 1
+
+                name = people[i] \
+                    .find_element_by_class_name(suggestions_configuration['nameClass']) \
+                    .get_attribute('innerText')
+                headline = people[i] \
+                    .find_element_by_class_name(suggestions_configuration['headlineClass']) \
+                    .get_attribute('innerText')
+                link = people[i] \
+                    .find_element_by_class_name(suggestions_configuration['linkClass']) \
+                    .get_attribute('href')
+
+                button = people[i].find_element_by_tag_name('button')
+
+                if connect:
+                    button.click()
+                    sleep(suggestions_configuration['connectDelay'])
+
+                names.append(name)
+                headlines.append(headline)
+                links.append(link)
+
+                if len(names) >= maximum_connections != -1:
+                    break
+
+            if prev_len == len(people):
+                if driver.execute_script('(window.innerHeight + window.scrollY) >= document.body.scrollHeight'):
+                    break
+                else:
+                    driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+
+            prev_len = len(people)
+
+            sleep(suggestions_configuration['scrollDelay'])
+
+        df = pd.DataFrame(
+            {'Name': names,
+             'HeadLine': headlines,
+             'Link': links
+             })
+
+        df.to_csv(f'./out/Suggestions.csv', index=False)
 
     @staticmethod
     def handle_profile_connections(connect: bool = False, depth=1):
@@ -133,7 +203,6 @@ class ConnectionHandler:
                             continue
 
                         if button_text == company_people_configuration['connectInnerHTML']:
-                            print(name)
                             button.click()
                             connect_confirmation_button = driver.find_element(
                                 By.XPATH,

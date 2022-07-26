@@ -17,6 +17,7 @@ Adjust the following critical parameters in `config.json`:
 |-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `webDriver`                                   | Specify the desired webdriver                                                                                                                               |
 | `maximumConnections`                          | Specify the threshold of processed connections before stopping (for each method), set to -1 for unlimited                                                   |
+| `securityVerificationDelay`                   | Set the time in seconds necessary to manually solve the security verification question upon login                                                           |
 | `webLoadDelay`                                | Specify the number of seconds to wait till a website is loaded successfully (compensates for slow internet connections), throws an exception when times out |
 | `companyNames`                                | Specify the company name(s) to iterate                                                                                                                      |
 | `profileNames`                                | Specify the profile name(s) to iterate                                                                                                                      |
