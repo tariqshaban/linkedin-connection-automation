@@ -1,3 +1,5 @@
+import pyautogui as pyautogui
+
 from providers.configuration_handler import ConfigurationHandler
 from providers.driver_handler import DriverHandler
 
@@ -6,8 +8,8 @@ class AuthenticationHandler:
 
     @staticmethod
     def __request_credentials():
-        username = input('Please insert your email or phone number\n')
-        password = input('Please insert your password\n')
+        username = input('Please insert your email or phone number:\n')
+        password = pyautogui.password(title='Please insert your password:', mask='*')
         return [username, password]
 
     @staticmethod
@@ -34,5 +36,8 @@ class AuthenticationHandler:
 
         username_field.send_keys(username)
         password_field.send_keys(password)
+
+        del username
+        del password
 
         username_field.submit()

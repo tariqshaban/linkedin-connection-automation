@@ -18,6 +18,7 @@ Adjust the following critical parameters in `config.json`:
 | `webDriver`                                   | Specify the desired webdriver                                                                                                                               |
 | `maximumConnections`                          | Specify the threshold of processed connections before stopping (for each method), set to -1 for unlimited                                                   |
 | `webLoadDelay`                                | Specify the number of seconds to wait till a website is loaded successfully (compensates for slow internet connections), throws an exception when times out |
+| `companyNames`                                | Specify the company name(s) to iterate                                                                                                                      |
 | `profileNames`                                | Specify the profile name(s) to iterate                                                                                                                      |
 | `endpoints`&#10132;`longin`&#10132;`username` | Specify the username. *Optional*, useful since the username will not be required every runtime, **insecure** since credentials are saved in a raw file.     |
 | `endpoints`&#10132;`longin`&#10132;`password` | Specify the password. *Optional*, useful since the password will not be required every runtime, **insecure** since credentials are saved in a raw file.     |
@@ -84,5 +85,7 @@ Disclaimer
 The program requires a valid username/password combination in order to function; such credentials will **NEVER** be
 disclosed, stored, processed, or sent to any server/third-party provider. You can inspect the code to verify its
 confidentiality level in handling such sensitive data.
+
+LinkedIn will temporarily restrict your account if too many requests were issued in a small timeframe.
 
 --------

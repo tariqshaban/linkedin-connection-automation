@@ -2,7 +2,8 @@
   "webDriver": "edge",
   "maximumConnections": -1,
   "webLoadDelay": 5,
-  "profileNames": {},
+  "companyNames": [],
+  "profileNames": [],
   "endpoints": {
     "longin": {
       "url": "https://www.linkedin.com/login",
@@ -10,6 +11,16 @@
       "password": "",
       "usernameElementId": "username",
       "passwordElementId": "password"
+    },
+    "profile": {
+      "connectInnerHTML": "Connect",
+      "confirmInnerHTML": "Send",
+      "messageInnerHTML": "Message",
+      "followInnerHTML": "Follow",
+      "otherInnerHTML": "Other",
+      "visibleConnectParentElement": "button",
+      "hiddenConnectParentElement": "div",
+      "closeDelay": 1
     },
     "companyPeople": {
       "url": "https://www.linkedin.com/company/COMPANY_NAME/people/",
@@ -19,22 +30,30 @@
       "linkClass": "ember-view.link-without-visited-state",
       "connectInnerHTML": "Connect",
       "messageInnerHTML": "Message",
+      "followInnerHTML": "Follow",
+      "confirmInnerHTML": "Send",
+      "firstDegreeInnerHTML": "1st",
+      "degreeClass": "artdeco-entity-lockup__degree",
       "undisclosedAccount": "LinkedIn Member",
       "connectDelay": 1,
-      "scrollDelay": 2
+      "scrollDelay": 1
     },
     "receivedInvitations": {
       "url": "https://www.linkedin.com/mynetwork/invitation-manager/",
+      "invitationListClass": "mn-invitation-list",
       "nameClass": "invitation-card__title",
       "headlineClass": "invitation-card__subtitle",
       "linkClass": "invitation-card__link",
-      "acceptInnerHTML": "Ignore",
-      "ignoreInnerHTML": "Accept",
+      "acceptInnerHTML": "Accept",
+      "acceptConfirmationInnerHTML": "Accept",
+      "ignoreInnerHTML": "Ignore",
+      "ignoreConfirmationInnerHTML": "Ignore",
       "acceptDelay": 1,
       "ignoreDelay": 1
     },
     "sentInvitations": {
       "url": "https://www.linkedin.com/mynetwork/invitation-manager/sent/",
+      "invitationListClass": "mn-invitation-list",
       "nameClass": "invitation-card__title",
       "headlineClass": "invitation-card__subtitle",
       "linkClass": "invitation-card__link",
