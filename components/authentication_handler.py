@@ -44,4 +44,4 @@ class AuthenticationHandler:
 
         username_field.submit()
 
-        sleep(ConfigurationHandler.get_configuration()['endpoints'])
+        sleep(ConfigurationHandler.get_configuration()['securityVerificationDelay'])

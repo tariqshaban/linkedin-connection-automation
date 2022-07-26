@@ -110,7 +110,7 @@ class ConnectionHandler:
                     .find_element_by_class_name(suggestions_configuration['linkClass']) \
                     .get_attribute('href')
 
-                button = people[i].find_element_by_tag_name('button')
+                button = people[i].find_elements_by_tag_name('button')[-1]
 
                 if connect:
                     button.click()
