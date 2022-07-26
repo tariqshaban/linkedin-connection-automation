@@ -46,6 +46,9 @@ AuthenticationHandler.login() # ==> Must be invoked first
 # Redirects to 'https://www.linkedin.com/mynetwork/' and connects to all profiles under the 'More suggestions for you' section
 ConnectionHandler.handle_suggestions(connect: bool = False)
 
+# Redirects to 'https://www.linkedin.com/search/results/people/' and iteratively connects to all profiles in each page
+ConnectionHandler.handle_people_search(connect: bool = False)
+
 # Fetches a specified profile(s) by their name(s) in the URL and recursively connect to all of their connections
 ConnectionHandler.handle_profile_connections(connect: bool = False, depth=1)
 
