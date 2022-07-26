@@ -49,8 +49,8 @@ ConnectionHandler.handle_suggestions(connect: bool = False)
 # Redirects to 'https://www.linkedin.com/search/results/people/' and iteratively connects to all profiles in each page
 ConnectionHandler.handle_people_search(connect: bool = False)
 
-# Fetches a specified profile(s) by their name(s) in the URL and recursively connect to all of their connections
-ConnectionHandler.handle_profile_connections(connect: bool = False, depth=1)
+# Redirects to 'https://www.linkedin.com/search/results/people/' for a specified profile(s) and recursively connects to all profiles in each page
+ConnectionHandler.handle_profile_connections(connect: bool = False, depth = 1)
 
 # Retrieves all of the specified company's/companies' people, and connects to them
 ConnectionHandler.handle_company_people(connect: bool = False)

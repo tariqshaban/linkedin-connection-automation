@@ -163,7 +163,7 @@ class ConnectionHandler:
 
             WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']).until(
                 EC.presence_of_element_located(
-                    (By.CLASS_NAME, 'artdeco-button.artdeco-button--2.artdeco-button--secondary.ember-view')
+                    (By.CLASS_NAME, people_search_configuration['buttonClass'])
                 ))
 
             people = driver.find_element_by_class_name(people_search_configuration['listClass']) \
@@ -175,33 +175,33 @@ class ConnectionHandler:
             pagination_threshold = \
                 int(driver.find_element_by_class_name(people_search_configuration['paginationInnerHTML'])
                     .find_elements_by_tag_name('li')[-1]
-                    .find_elements_by_css_selector("*")[0]
-                    .find_elements_by_css_selector("*")[0]
+                    .find_elements_by_css_selector('*')[0]
+                    .find_elements_by_css_selector('*')[0]
                     .get_attribute('innerText'))
 
             driver.execute_script('window.scrollTo(0, 0);')
 
-            for people in people:
+            for person in people:
                 counter += 1
 
-                name = people \
+                name = person \
                     .find_element_by_class_name(people_search_configuration['nameClass']) \
-                    .find_elements_by_css_selector("*")[0] \
-                    .find_elements_by_css_selector("*")[0] \
-                    .find_elements_by_css_selector("*")[0] \
-                    .find_elements_by_css_selector("*")[0] \
+                    .find_elements_by_css_selector('*')[0] \
+                    .find_elements_by_css_selector('*')[0] \
+                    .find_elements_by_css_selector('*')[0] \
+                    .find_elements_by_css_selector('*')[0] \
                     .get_attribute('innerText')
-                headline = people \
+                headline = person \
                     .find_element_by_class_name(people_search_configuration['headlineClass']) \
                     .get_attribute('innerText')
-                link = people \
+                link = person \
                     .find_element_by_class_name(people_search_configuration['linkClass']) \
-                    .find_elements_by_css_selector("*")[0] \
-                    .find_elements_by_css_selector("*")[0] \
+                    .find_elements_by_css_selector('*')[0] \
+                    .find_elements_by_css_selector('*')[0] \
                     .get_attribute('href').split('?')[0]
 
                 if connect:
-                    button = people.find_element_by_tag_name('button')
+                    button = person.find_element_by_tag_name('button')
                     button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
                     if button_text == people_search_configuration['connectInnerHTML']:
                         button.click()
@@ -235,8 +235,255 @@ class ConnectionHandler:
         df.to_csv(f'./out/People Search.csv', index=False)
 
     @staticmethod
+    def __handle_profile_connections(profile_name, accumulated_links: list[str], connect: bool = False, depth=1):
+        profile_connections_configuration = \
+            ConfigurationHandler.get_configuration()['endpoints']['profileConnections']
+
+        driver = DriverHandler.get_driver()
+
+        profiles = [profile_name]
+
+        for profile in profiles:
+            url = profile_connections_configuration['url']
+            url = url.replace('PROFILE_NAME', profile)
+            driver.get(url)
+
+            WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']).until(
+                EC.presence_of_element_located(
+                    (By.CLASS_NAME, profile_connections_configuration['connectionsIndicatorClass'])
+                ))
+
+            try:
+                url = driver \
+                    .find_element_by_class_name(profile_connections_configuration['connectionsIndicatorClass']) \
+                    .find_element_by_tag_name('a') \
+                    .get_attribute('href')
+                url = url[0:url.index(profile_connections_configuration['degreeQueryString'])]
+            except NoSuchElementException:
+                continue
+
+            names = []
+            headlines = []
+            links = []
+
+            counter = 0
+            pagination = 1
+            pagination_threshold = 100
+            maximum_connections = ConfigurationHandler.get_configuration()['maximumConnections']
+
+            while (len(names) < maximum_connections or maximum_connections == -1) \
+                    and pagination <= pagination_threshold:
+                driver.get(f'{url}&{profile_connections_configuration["paginationURL"]}={pagination}')
+                pagination += 1
+
+                WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']).until(
+                    EC.presence_of_element_located(
+                        (By.CLASS_NAME, profile_connections_configuration['buttonClass'])
+                    ))
+
+                people = driver.find_element_by_class_name(profile_connections_configuration['listClass']) \
+                    .find_elements_by_tag_name('li')
+
+                driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+                sleep(profile_connections_configuration['buttonRenderDelay'])
+
+                pagination_threshold = \
+                    int(driver.find_element_by_class_name(profile_connections_configuration['paginationInnerHTML'])
+                        .find_elements_by_tag_name('li')[-1]
+                        .find_elements_by_css_selector('*')[0]
+                        .find_elements_by_css_selector('*')[0]
+                        .get_attribute('innerText'))
+
+                driver.execute_script('window.scrollTo(0, 0);')
+
+                for person in people:
+                    counter += 1
+
+                    name = person \
+                        .find_element_by_class_name(profile_connections_configuration['nameClass']) \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .get_attribute('innerText')
+                    headline = person \
+                        .find_element_by_class_name(profile_connections_configuration['headlineClass']) \
+                        .get_attribute('innerText')
+                    link = person \
+                        .find_element_by_class_name(profile_connections_configuration['linkClass']) \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .get_attribute('href').split('?')[0]
+
+                    if depth - 1 > 0 and link not in accumulated_links:
+                        driver.execute_script('window.open("");')
+                        driver.switch_to.window(driver.window_handles[-1])
+                        accumulated_links.append(link)
+                        ConnectionHandler.__handle_profile_connections(connect=connect,
+                                                                       depth=depth - 1,
+                                                                       profile_name=link[link.rindex('/') + 1:],
+                                                                       accumulated_links=accumulated_links)
+                        driver.close()
+                        driver.switch_to.window(driver.window_handles[-1])
+
+                    if connect:
+                        button = person.find_element_by_tag_name('button')
+                        button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
+                        if button_text == profile_connections_configuration['connectInnerHTML']:
+                            button.click()
+                            connect_confirmation_button = driver.find_element(
+                                By.XPATH,
+                                '//*[text()="' + profile_connections_configuration['confirmInnerHTML'] + '"]'
+                            )
+                            connect_confirmation_button.find_element_by_xpath('..').click()
+                            sleep(profile_connections_configuration['connectDelay'])
+                        elif button_text == profile_connections_configuration['messageInnerHTML'] or \
+                                button_text == profile_connections_configuration['followInnerHTML']:
+                            ConnectionHandler.__connect_to_user(url=link)
+                        else:
+                            continue
+
+                    names.append(name)
+                    headlines.append(headline)
+                    links.append(link)
+
+                    if len(names) >= maximum_connections != -1:
+                        break
+
+                sleep(profile_connections_configuration['paginationDelay'])
+
+            df = pd.DataFrame(
+                {'Name': names,
+                 'HeadLine': headlines,
+                 'Link': links
+                 })
+
+            df.to_csv(f'./out/{profile} Connections.csv', index=False)
+
+    @staticmethod
     def handle_profile_connections(connect: bool = False, depth=1):
-        raise NotImplementedError
+        profile_connections_configuration = \
+            ConfigurationHandler.get_configuration()['endpoints']['profileConnections']
+
+        driver = DriverHandler.get_driver()
+
+        profiles = ConfigurationHandler.get_configuration()['profileNames']
+
+        for profile in profiles:
+            url = profile_connections_configuration['url']
+            url = url.replace('PROFILE_NAME', profile)
+            driver.get(url)
+
+            WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']).until(
+                EC.presence_of_element_located(
+                    (By.CLASS_NAME, profile_connections_configuration['connectionsIndicatorClass'])
+                ))
+
+            try:
+                url = driver \
+                    .find_element_by_class_name(profile_connections_configuration['connectionsIndicatorClass']) \
+                    .find_element_by_tag_name('a') \
+                    .get_attribute('href')
+                url = url[0:url.index(profile_connections_configuration['degreeQueryString'])]
+            except NoSuchElementException:
+                continue
+
+            names = []
+            headlines = []
+            links = []
+
+            counter = 0
+            pagination = 1
+            pagination_threshold = 100
+            maximum_connections = ConfigurationHandler.get_configuration()['maximumConnections']
+
+            while (len(names) < maximum_connections or maximum_connections == -1) \
+                    and pagination <= pagination_threshold:
+                driver.get(f'{url}&{profile_connections_configuration["paginationURL"]}={pagination}')
+                pagination += 1
+
+                WebDriverWait(driver, ConfigurationHandler.get_configuration()['webLoadDelay']).until(
+                    EC.presence_of_element_located(
+                        (By.CLASS_NAME, profile_connections_configuration['buttonClass'])
+                    ))
+
+                people = driver.find_element_by_class_name(profile_connections_configuration['listClass']) \
+                    .find_elements_by_tag_name('li')
+
+                driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+                sleep(profile_connections_configuration['buttonRenderDelay'])
+
+                pagination_threshold = \
+                    int(driver.find_element_by_class_name(profile_connections_configuration['paginationInnerHTML'])
+                        .find_elements_by_tag_name('li')[-1]
+                        .find_elements_by_css_selector('*')[0]
+                        .find_elements_by_css_selector('*')[0]
+                        .get_attribute('innerText'))
+
+                driver.execute_script('window.scrollTo(0, 0);')
+
+                for person in people:
+                    counter += 1
+
+                    name = person \
+                        .find_element_by_class_name(profile_connections_configuration['nameClass']) \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .get_attribute('innerText')
+                    headline = person \
+                        .find_element_by_class_name(profile_connections_configuration['headlineClass']) \
+                        .get_attribute('innerText')
+                    link = person \
+                        .find_element_by_class_name(profile_connections_configuration['linkClass']) \
+                        .find_elements_by_css_selector('*')[0] \
+                        .find_elements_by_css_selector('*')[0] \
+                        .get_attribute('href').split('?')[0]
+
+                    if depth - 1 > 0:
+                        driver.execute_script('window.open("");')
+                        driver.switch_to.window(driver.window_handles[-1])
+                        ConnectionHandler.__handle_profile_connections(connect=connect,
+                                                                       depth=depth - 1,
+                                                                       profile_name=link[link.rindex('/') + 1:],
+                                                                       accumulated_links=[])
+                        driver.close()
+                        driver.switch_to.window(driver.window_handles[-1])
+
+                    if connect:
+                        button = person.find_element_by_tag_name('button')
+                        button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
+                        if button_text == profile_connections_configuration['connectInnerHTML']:
+                            button.click()
+                            connect_confirmation_button = driver.find_element(
+                                By.XPATH,
+                                '//*[text()="' + profile_connections_configuration['confirmInnerHTML'] + '"]'
+                            )
+                            connect_confirmation_button.find_element_by_xpath('..').click()
+                            sleep(profile_connections_configuration['connectDelay'])
+                        elif button_text == profile_connections_configuration['messageInnerHTML'] or \
+                                button_text == profile_connections_configuration['followInnerHTML']:
+                            ConnectionHandler.__connect_to_user(url=link)
+                        else:
+                            continue
+
+                    names.append(name)
+                    headlines.append(headline)
+                    links.append(link)
+
+                    if len(names) >= maximum_connections != -1:
+                        break
+
+                sleep(profile_connections_configuration['paginationDelay'])
+
+            df = pd.DataFrame(
+                {'Name': names,
+                 'HeadLine': headlines,
+                 'Link': links
+                 })
+
+            df.to_csv(f'./out/{profile} Connections.csv', index=False)
 
     @staticmethod
     def handle_company_people(connect: bool = False):
