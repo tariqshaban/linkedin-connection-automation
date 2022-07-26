@@ -44,41 +44,27 @@ Navigate to `main.py` and invoke the desired methods
 AuthenticationHandler.login() # ==> Must be invoked first
 
 # Redirects to 'https://www.linkedin.com/mynetwork/' and connects to all profiles under the 'More suggestions for you' section
-ConnectionHandler.connect_to_suggestion()
+ConnectionHandler.handle_suggestions(connect: bool = False)
 
-# Similar to connect_to_suggestion(), however, returns a CSV file concerning the people's information instead of connecting
-ConnectionHandler.get_suggestions()
-
-# Fetches a specified profile(s) by their name(s) in the URL and connects to all of their connections
-ConnectionHandler.connect_to_profile_connections(profile_name: Union[str, list[str]], depth=1)
-
-# Similar to connect_to_profile_connections(), however, returns a CSV file concerning the people's information instead of connecting
-ConnectionHandler.get_profile_connections(profile_name: Union[str, list[str]], depth=1)
+# Fetches a specified profile(s) by their name(s) in the URL and recursively connect to all of their connections
+ConnectionHandler.handle_profile_connections(connect: bool = False, depth=1)
 
 # Retrieves all of the specified company's/companies' people, and connects to them
-ConnectionHandler.connect_to_company_people(company_name: Union[str, list[str]])
+ConnectionHandler.handle_company_people(connect: bool = False)
 
-# Similar to connect_to_company_people(), however, returns a CSV file concerning the people's information instead of connecting
-ConnectionHandler.get_company_people(company_name: Union[str, list[str]])
-
-# Accepts all incoming connection requests
-ConnectionHandler.accept_received_invitations()
-
-# Ignores all incoming connection requests
-ConnectionHandler.ignore_received_invitations()
-
-# Similar to accept_received_invitations() and ignore_received_invitations(), however, returns a CSV file concerning the people's information instead of accepting/ignoring
-ConnectionHandler.get_received_invitations()
+# Accepts/ignores all incoming connection requests
+ConnectionHandler.handle_received_invitations(accept: bool = False, ignore: bool = False)
 
 # Withdraws all outgoing connection requests
-ConnectionHandler.withdraw_sent_invitations() # ==> Warning, LinkedIn will not permit reconnecting to the same profile for three weeks
-
-# Similar to withdraw_sent_invitations(), however, returns a CSV file concerning the people's information instead of withdrawing
-ConnectionHandler.get_sent_invitations()
+ConnectionHandler.handle_sent_invitations(withdraw: bool = False) # ==> Warning, LinkedIn will not permit reconnecting to the same profile for three weeks
 ```
 
-Note that the `profile_name` argument is not the real profile name at the webpage, but rather the **user's denoted URL
-profile name**, similar concept applies to `company_name`.
+To specify either the company name or the profile name, `companyNames` and `profileNames` keys in `config.json` must be
+modified. Note that the values should not be the actual company/profile name on the webpage itself; but rather the 
+**denoted string value from the URL**.
+
+For precautionary reasons, the default behaviour of the methods is **passive**; that is, they only generate CSV files
+without taking action; to override such behaviour, set the boolean flag to the respected method's argument to true.
 
 Disclaimer
 ------------
