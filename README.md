@@ -55,10 +55,10 @@ ConnectionHandler.handle_profile_connections(connect: bool = False, depth = 1)
 # Retrieves all of the specified company's/companies' people, and connects to them
 ConnectionHandler.handle_company_people(connect: bool = False)
 
-# Accepts/ignores all incoming connection requests
+# Redirects to 'https://www.linkedin.com/mynetwork/invitation-manager/' and accepts/ignores all incoming connection requests
 ConnectionHandler.handle_received_invitations(accept: bool = False, ignore: bool = False)
 
-# Withdraws all outgoing connection requests
+# Redirects to 'https://www.linkedin.com/mynetwork/invitation-manager/sent/' and withdraws all outgoing connection requests
 ConnectionHandler.handle_sent_invitations(withdraw: bool = False) # ==> Warning, LinkedIn will not permit reconnecting to the same profile for three weeks
 ```
 

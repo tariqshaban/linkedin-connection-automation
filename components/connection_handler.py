@@ -12,9 +12,44 @@ from providers.driver_handler import DriverHandler
 
 
 class ConnectionHandler:
+    """
+    Static methods which handles various connection procedures in LinkedIn.
+
+    Methods
+    -------
+        __connect_to_user(url: Union[str, list[str]]):
+            Connects to a specified user(s).
+        handle_suggestions(connect: bool = False):
+            Iterates through profiles in the `suggestions section <SUGGESTIONS_>`_.
+        handle_people_search(connect: bool = False):
+            Iterates through profiles in the `search page <PEOPLE_SEARCH_>`_.
+        __handle_profile_connections(profile_name: str, accumulated_links: list[str], connect: bool = False, depth: int = 1):
+            Recursively iterate through profiles per specified user(s) in the `search page (with filters)
+            <PROFILE_CONNECTIONS_>`_.
+        handle_profile_connections(connect: bool = False, depth: int = 1):
+            Recursively iterate through profiles per specified user(s) in the `search page (with filters)
+            <PROFILE_CONNECTIONS_>`_.
+        handle_company_people(connect: bool = False):
+            Iterates through profiles working in a specified company(s).
+        handle_received_invitations(accept: bool = False, ignore: bool = False):
+            Iterates through profiles in the `received invitations page <RECEIVED_INVITATIONS_>`_.
+        handle_sent_invitations(withdraw: bool = False):
+            Iterates through profiles in the `sent invitations page <SENT_INVITATIONS_>`_.
+
+    .. _SUGGESTIONS: https://www.linkedin.com/mynetwork/
+    .. _PEOPLE_SEARCH: https://www.linkedin.com/search/results/people/
+    .. _PROFILE_CONNECTIONS: https://www.linkedin.com/search/results/people/
+    .. _RECEIVED_INVITATIONS: https://www.linkedin.com/mynetwork/invitation-manager/
+    .. _SENT_INVITATIONS: https://www.linkedin.com/mynetwork/invitation-manager/sent/
+    """
 
     @staticmethod
     def __connect_to_user(url: Union[str, list[str]]):
+        """
+        Connects to a specified user(s).
+
+        :param Union[str, list[str]] url: Specify which user to connect to by their URL
+        """
         user_configuration = ConfigurationHandler.get_configuration()['endpoints']['profile']
 
         driver = DriverHandler.get_driver()
@@ -33,7 +68,7 @@ class ConnectionHandler:
             accept_button = driver.find_elements(
                 By.XPATH,
                 '//*[text()="' + user_configuration['connectInnerHTML'] + '"]'
-            )[1].find_element_by_xpath('..')
+            )[1].find_element(By.XPATH, '..')
 
             driver.execute_script('arguments[0].click();', accept_button)
 
@@ -42,7 +77,7 @@ class ConnectionHandler:
                     By.XPATH,
                     '//*[text()="' + user_configuration['confirmInnerHTML'] + '"]'
                 )
-                connect_confirmation_button.find_element_by_xpath('..').click()
+                connect_confirmation_button.find_element(By.XPATH, '..').click()
             except (Exception,):
                 connect_button_reason = driver.find_element(
                     By.XPATH,
@@ -54,13 +89,13 @@ class ConnectionHandler:
                     By.XPATH,
                     '//*[text()="' + user_configuration['connectInnerHTML'] + '"]'
                 )
-                connect_button.find_element_by_xpath('..').click()
+                connect_button.find_element(By.XPATH, '..').click()
 
                 connect_confirmation_button = driver.find_element(
                     By.XPATH,
                     '//*[text()="' + user_configuration['confirmInnerHTML'] + '"]'
                 )
-                connect_confirmation_button.find_element_by_xpath('..').click()
+                connect_confirmation_button.find_element(By.XPATH, '..').click()
 
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
@@ -69,6 +104,13 @@ class ConnectionHandler:
 
     @staticmethod
     def handle_suggestions(connect: bool = False):
+        """
+        Iterates through profiles in the `suggestions section <SUGGESTIONS_>`_.
+
+        :param bool connect: Specify whether to connect to the retrieved list of profiles or not
+
+        .. _SUGGESTIONS: https://www.linkedin.com/mynetwork/
+        """
         suggestions_configuration = \
             ConfigurationHandler.get_configuration()['endpoints']['suggestions']
 
@@ -93,25 +135,25 @@ class ConnectionHandler:
             suggestion_section = driver.find_element(
                 By.XPATH,
                 '//*[text()="' + suggestions_configuration['headerInnerHTML'] + '"]'
-            ).find_element_by_xpath('..').find_element_by_xpath('..')
-            people = suggestion_section.find_element_by_class_name(suggestions_configuration['listClass']) \
-                .find_elements_by_tag_name('li')
+            ).find_element(By.XPATH, '..').find_element(By.XPATH, '..')
+            people = suggestion_section.find_element(By.CLASS_NAME, suggestions_configuration['listClass']) \
+                .find_elements(By.TAG_NAME, 'li')
 
             for i in range(counter, len(people)):
                 counter += 1
 
                 name = people[i] \
-                    .find_element_by_class_name(suggestions_configuration['nameClass']) \
+                    .find_element(By.CLASS_NAME, suggestions_configuration['nameClass']) \
                     .get_attribute('innerText')
                 headline = people[i] \
-                    .find_element_by_class_name(suggestions_configuration['headlineClass']) \
+                    .find_element(By.CLASS_NAME, suggestions_configuration['headlineClass']) \
                     .get_attribute('innerText')
                 link = people[i] \
-                    .find_element_by_class_name(suggestions_configuration['linkClass']) \
+                    .find_element(By.CLASS_NAME, suggestions_configuration['linkClass']) \
                     .get_attribute('href')
 
                 if connect:
-                    button = people[i].find_elements_by_tag_name('button')[-1]
+                    button = people[i].find_elements(By.TAG_NAME, 'button')[-1]
                     button.click()
                     sleep(suggestions_configuration['connectDelay'])
 
@@ -142,6 +184,13 @@ class ConnectionHandler:
 
     @staticmethod
     def handle_people_search(connect: bool = False):
+        """
+        Iterates through profiles in the `search page <PEOPLE_SEARCH_>`_.
+
+        :param bool connect: Specify whether to connect to the retrieved list of profiles or not
+
+        .. _PEOPLE_SEARCH: https://www.linkedin.com/search/results/people/
+        """
         people_search_configuration = \
             ConfigurationHandler.get_configuration()['endpoints']['peopleSearch']
 
@@ -166,17 +215,17 @@ class ConnectionHandler:
                     (By.CLASS_NAME, people_search_configuration['buttonClass'])
                 ))
 
-            people = driver.find_element_by_class_name(people_search_configuration['listClass']) \
-                .find_elements_by_tag_name('li')
+            people = driver.find_element(By.CLASS_NAME, people_search_configuration['listClass']) \
+                .find_elements(By.TAG_NAME, 'li')
 
             driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
             sleep(people_search_configuration['buttonRenderDelay'])
 
             pagination_threshold = \
-                int(driver.find_element_by_class_name(people_search_configuration['paginationInnerHTML'])
-                    .find_elements_by_tag_name('li')[-1]
-                    .find_elements_by_css_selector('*')[0]
-                    .find_elements_by_css_selector('*')[0]
+                int(driver.find_element(By.CLASS_NAME, people_search_configuration['paginationInnerHTML'])
+                    .find_elements(By.TAG_NAME, 'li')[-1]
+                    .find_elements(By.CSS_SELECTOR, '*')[0]
+                    .find_elements(By.CSS_SELECTOR, '*')[0]
                     .get_attribute('innerText'))
 
             driver.execute_script('window.scrollTo(0, 0);')
@@ -185,31 +234,31 @@ class ConnectionHandler:
                 counter += 1
 
                 name = person \
-                    .find_element_by_class_name(people_search_configuration['nameClass']) \
-                    .find_elements_by_css_selector('*')[0] \
-                    .find_elements_by_css_selector('*')[0] \
-                    .find_elements_by_css_selector('*')[0] \
-                    .find_elements_by_css_selector('*')[0] \
+                    .find_element(By.CLASS_NAME, people_search_configuration['nameClass']) \
+                    .find_elements(By.CSS_SELECTOR, '*')[0] \
+                    .find_elements(By.CSS_SELECTOR, '*')[0] \
+                    .find_elements(By.CSS_SELECTOR, '*')[0] \
+                    .find_elements(By.CSS_SELECTOR, '*')[0] \
                     .get_attribute('innerText')
                 headline = person \
-                    .find_element_by_class_name(people_search_configuration['headlineClass']) \
+                    .find_element(By.CLASS_NAME, people_search_configuration['headlineClass']) \
                     .get_attribute('innerText')
                 link = person \
-                    .find_element_by_class_name(people_search_configuration['linkClass']) \
-                    .find_elements_by_css_selector('*')[0] \
-                    .find_elements_by_css_selector('*')[0] \
+                    .find_element(By.CLASS_NAME, people_search_configuration['linkClass']) \
+                    .find_elements(By.CSS_SELECTOR, '*')[0] \
+                    .find_elements(By.CSS_SELECTOR, '*')[0] \
                     .get_attribute('href').split('?')[0]
 
                 if connect:
-                    button = person.find_element_by_tag_name('button')
-                    button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
+                    button = person.find_element(By.TAG_NAME, 'button')
+                    button_text = button.find_element(By.TAG_NAME, 'span').get_attribute('innerText')
                     if button_text == people_search_configuration['connectInnerHTML']:
                         button.click()
                         connect_confirmation_button = driver.find_element(
                             By.XPATH,
                             '//*[text()="' + people_search_configuration['confirmInnerHTML'] + '"]'
                         )
-                        connect_confirmation_button.find_element_by_xpath('..').click()
+                        connect_confirmation_button.find_element(By.XPATH, '..').click()
                         sleep(people_search_configuration['connectDelay'])
                     elif button_text == people_search_configuration['messageInnerHTML'] or \
                             button_text == people_search_configuration['followInnerHTML']:
@@ -235,7 +284,21 @@ class ConnectionHandler:
         df.to_csv(f'./out/People Search.csv', index=False)
 
     @staticmethod
-    def __handle_profile_connections(profile_name, accumulated_links: list[str], connect: bool = False, depth=1):
+    def __handle_profile_connections(profile_name: str, accumulated_links: list[str], connect: bool = False,
+                                     depth: int = 1):
+        """
+        Recursively iterate through profiles per specified user(s) in the `search page (with filters)
+        <PROFILE_CONNECTIONS_>`_.
+
+        :param str profile_name: Specify which profile name to view their connections
+        :param list[str] accumulated_links: Accumulate handled links to avoid infinite callbacks
+               (when an already processed profile gets processed again at a different depth)
+        :param bool connect: Specify whether to connect to the retrieved list of profiles or not
+        :param int depth: Specify the depth of the recursion, that is, the depth of connecting to a profile's
+                          connections who is a connection to the root profile (set to one for no recursion)
+
+        .. _PROFILE_CONNECTIONS: https://www.linkedin.com/search/results/people/
+        """
         profile_connections_configuration = \
             ConfigurationHandler.get_configuration()['endpoints']['profileConnections']
 
@@ -255,8 +318,8 @@ class ConnectionHandler:
 
             try:
                 url = driver \
-                    .find_element_by_class_name(profile_connections_configuration['connectionsIndicatorClass']) \
-                    .find_element_by_tag_name('a') \
+                    .find_element(By.CLASS_NAME, profile_connections_configuration['connectionsIndicatorClass']) \
+                    .find_element(By.TAG_NAME, 'a') \
                     .get_attribute('href')
                 url = url[0:url.index(profile_connections_configuration['degreeQueryString'])]
             except NoSuchElementException:
@@ -281,17 +344,17 @@ class ConnectionHandler:
                         (By.CLASS_NAME, profile_connections_configuration['buttonClass'])
                     ))
 
-                people = driver.find_element_by_class_name(profile_connections_configuration['listClass']) \
-                    .find_elements_by_tag_name('li')
+                people = driver.find_element(By.CLASS_NAME, profile_connections_configuration['listClass']) \
+                    .find_elements(By.TAG_NAME, 'li')
 
                 driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
                 sleep(profile_connections_configuration['buttonRenderDelay'])
 
                 pagination_threshold = \
-                    int(driver.find_element_by_class_name(profile_connections_configuration['paginationInnerHTML'])
-                        .find_elements_by_tag_name('li')[-1]
-                        .find_elements_by_css_selector('*')[0]
-                        .find_elements_by_css_selector('*')[0]
+                    int(driver.find_element(By.CLASS_NAME, profile_connections_configuration['paginationInnerHTML'])
+                        .find_elements(By.TAG_NAME, 'li')[-1]
+                        .find_elements(By.CSS_SELECTOR, '*')[0]
+                        .find_elements(By.CSS_SELECTOR, '*')[0]
                         .get_attribute('innerText'))
 
                 driver.execute_script('window.scrollTo(0, 0);')
@@ -300,19 +363,19 @@ class ConnectionHandler:
                     counter += 1
 
                     name = person \
-                        .find_element_by_class_name(profile_connections_configuration['nameClass']) \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
+                        .find_element(By.CLASS_NAME, profile_connections_configuration['nameClass']) \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
                         .get_attribute('innerText')
                     headline = person \
-                        .find_element_by_class_name(profile_connections_configuration['headlineClass']) \
+                        .find_element(By.CLASS_NAME, profile_connections_configuration['headlineClass']) \
                         .get_attribute('innerText')
                     link = person \
-                        .find_element_by_class_name(profile_connections_configuration['linkClass']) \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
+                        .find_element(By.CLASS_NAME, profile_connections_configuration['linkClass']) \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
                         .get_attribute('href').split('?')[0]
 
                     if depth - 1 > 0 and link not in accumulated_links:
@@ -327,15 +390,15 @@ class ConnectionHandler:
                         driver.switch_to.window(driver.window_handles[-1])
 
                     if connect:
-                        button = person.find_element_by_tag_name('button')
-                        button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
+                        button = person.find_element(By.TAG_NAME, 'button')
+                        button_text = button.find_element(By.TAG_NAME, 'span').get_attribute('innerText')
                         if button_text == profile_connections_configuration['connectInnerHTML']:
                             button.click()
                             connect_confirmation_button = driver.find_element(
                                 By.XPATH,
                                 '//*[text()="' + profile_connections_configuration['confirmInnerHTML'] + '"]'
                             )
-                            connect_confirmation_button.find_element_by_xpath('..').click()
+                            connect_confirmation_button.find_element(By.XPATH, '..').click()
                             sleep(profile_connections_configuration['connectDelay'])
                         elif button_text == profile_connections_configuration['messageInnerHTML'] or \
                                 button_text == profile_connections_configuration['followInnerHTML']:
@@ -361,7 +424,17 @@ class ConnectionHandler:
             df.to_csv(f'./out/{profile} Connections.csv', index=False)
 
     @staticmethod
-    def handle_profile_connections(connect: bool = False, depth=1):
+    def handle_profile_connections(connect: bool = False, depth: int = 1):
+        """
+        Recursively iterate through profiles per specified user(s) in the `search page (with filters)
+        <PROFILE_CONNECTIONS_>`_.
+
+        :param bool connect: Specify whether to connect to the retrieved list of profiles or not
+        :param int depth: Specify the depth of the recursion, that is, the depth of connecting to a profile's
+                          connections who is a connection to the root profile (set to one for no recursion)
+
+        .. _PROFILE_CONNECTIONS: https://www.linkedin.com/search/results/people/
+        """
         profile_connections_configuration = \
             ConfigurationHandler.get_configuration()['endpoints']['profileConnections']
 
@@ -381,8 +454,8 @@ class ConnectionHandler:
 
             try:
                 url = driver \
-                    .find_element_by_class_name(profile_connections_configuration['connectionsIndicatorClass']) \
-                    .find_element_by_tag_name('a') \
+                    .find_element(By.CLASS_NAME, profile_connections_configuration['connectionsIndicatorClass']) \
+                    .find_element(By.TAG_NAME, 'a') \
                     .get_attribute('href')
                 url = url[0:url.index(profile_connections_configuration['degreeQueryString'])]
             except NoSuchElementException:
@@ -407,17 +480,17 @@ class ConnectionHandler:
                         (By.CLASS_NAME, profile_connections_configuration['buttonClass'])
                     ))
 
-                people = driver.find_element_by_class_name(profile_connections_configuration['listClass']) \
-                    .find_elements_by_tag_name('li')
+                people = driver.find_element(By.CLASS_NAME, profile_connections_configuration['listClass']) \
+                    .find_elements(By.TAG_NAME, 'li')
 
                 driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
                 sleep(profile_connections_configuration['buttonRenderDelay'])
 
                 pagination_threshold = \
-                    int(driver.find_element_by_class_name(profile_connections_configuration['paginationInnerHTML'])
-                        .find_elements_by_tag_name('li')[-1]
-                        .find_elements_by_css_selector('*')[0]
-                        .find_elements_by_css_selector('*')[0]
+                    int(driver.find_element(By.CLASS_NAME, profile_connections_configuration['paginationInnerHTML'])
+                        .find_elements(By.TAG_NAME, 'li')[-1]
+                        .find_elements(By.CSS_SELECTOR, '*')[0]
+                        .find_elements(By.CSS_SELECTOR, '*')[0]
                         .get_attribute('innerText'))
 
                 driver.execute_script('window.scrollTo(0, 0);')
@@ -426,19 +499,19 @@ class ConnectionHandler:
                     counter += 1
 
                     name = person \
-                        .find_element_by_class_name(profile_connections_configuration['nameClass']) \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
+                        .find_element(By.CLASS_NAME, profile_connections_configuration['nameClass']) \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
                         .get_attribute('innerText')
                     headline = person \
-                        .find_element_by_class_name(profile_connections_configuration['headlineClass']) \
+                        .find_element(By.CLASS_NAME, profile_connections_configuration['headlineClass']) \
                         .get_attribute('innerText')
                     link = person \
-                        .find_element_by_class_name(profile_connections_configuration['linkClass']) \
-                        .find_elements_by_css_selector('*')[0] \
-                        .find_elements_by_css_selector('*')[0] \
+                        .find_element(By.CLASS_NAME, profile_connections_configuration['linkClass']) \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
+                        .find_elements(By.CSS_SELECTOR, '*')[0] \
                         .get_attribute('href').split('?')[0]
 
                     if depth - 1 > 0:
@@ -452,15 +525,15 @@ class ConnectionHandler:
                         driver.switch_to.window(driver.window_handles[-1])
 
                     if connect:
-                        button = person.find_element_by_tag_name('button')
-                        button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
+                        button = person.find_element(By.TAG_NAME, 'button')
+                        button_text = button.find_element(By.TAG_NAME, 'span').get_attribute('innerText')
                         if button_text == profile_connections_configuration['connectInnerHTML']:
                             button.click()
                             connect_confirmation_button = driver.find_element(
                                 By.XPATH,
                                 '//*[text()="' + profile_connections_configuration['confirmInnerHTML'] + '"]'
                             )
-                            connect_confirmation_button.find_element_by_xpath('..').click()
+                            connect_confirmation_button.find_element(By.XPATH, '..').click()
                             sleep(profile_connections_configuration['connectDelay'])
                         elif button_text == profile_connections_configuration['messageInnerHTML'] or \
                                 button_text == profile_connections_configuration['followInnerHTML']:
@@ -487,6 +560,11 @@ class ConnectionHandler:
 
     @staticmethod
     def handle_company_people(connect: bool = False):
+        """
+        Iterates through profiles working in a specified company(s).
+
+        :param bool connect: Specify whether to connect to the retrieved list of profiles or not
+        """
         company_people_configuration = \
             ConfigurationHandler.get_configuration()['endpoints']['companyPeople']
 
@@ -512,31 +590,31 @@ class ConnectionHandler:
             prev_len = 0
 
             while len(names) < maximum_connections or maximum_connections == -1:
-                people = driver.find_element_by_class_name(company_people_configuration['listClass']) \
-                    .find_elements_by_tag_name('li')
+                people = driver.find_element(By.CLASS_NAME, company_people_configuration['listClass']) \
+                    .find_elements(By.TAG_NAME, 'li')
 
                 for i in range(counter, len(people)):
                     counter += 1
 
                     try:
                         name = people[i] \
-                            .find_element_by_class_name(company_people_configuration['nameClass']) \
+                            .find_element(By.CLASS_NAME, company_people_configuration['nameClass']) \
                             .get_attribute('innerText')
                         headline = people[i] \
-                            .find_element_by_class_name(company_people_configuration['headlineClass']) \
+                            .find_element(By.CLASS_NAME, company_people_configuration['headlineClass']) \
                             .get_attribute('innerText')
                         link = people[i] \
-                            .find_element_by_class_name(company_people_configuration['linkClass']) \
+                            .find_element(By.CLASS_NAME, company_people_configuration['linkClass']) \
                             .get_attribute('href')
 
-                        button = people[i].find_element_by_tag_name('button')
-                        button_text = button.find_element_by_tag_name('span').get_attribute('innerText')
+                        button = people[i].find_element(By.TAG_NAME, 'button')
+                        button_text = button.find_element(By.TAG_NAME, 'span').get_attribute('innerText')
                     except NoSuchElementException:
                         continue
 
                     if connect:
                         degree = people[i] \
-                            .find_element_by_class_name(company_people_configuration['degreeClass']) \
+                            .find_element(By.CLASS_NAME, company_people_configuration['degreeClass']) \
                             .get_attribute('innerText')
 
                         if company_people_configuration['firstDegreeInnerHTML'] in degree:
@@ -548,12 +626,12 @@ class ConnectionHandler:
                                 By.XPATH,
                                 '//*[text()="' + company_people_configuration['confirmInnerHTML'] + '"]'
                             )
-                            connect_confirmation_button.find_element_by_xpath('..').click()
+                            connect_confirmation_button.find_element(By.XPATH, '..').click()
                             sleep(company_people_configuration['connectDelay'])
                         elif button_text == company_people_configuration['messageInnerHTML'] or \
                                 button_text == company_people_configuration['followInnerHTML']:
                             link = people[i] \
-                                .find_element_by_class_name(company_people_configuration['linkClass']) \
+                                .find_element(By.CLASS_NAME, company_people_configuration['linkClass']) \
                                 .get_attribute('href')
                             ConnectionHandler.__connect_to_user(url=link)
                         else:
@@ -586,6 +664,15 @@ class ConnectionHandler:
 
     @staticmethod
     def handle_received_invitations(accept: bool = False, ignore: bool = False):
+        """
+        Iterates through profiles in the `received invitations page <RECEIVED_INVITATIONS_>`_.
+
+        :param bool accept: Specify whether to accept the invitation of the retrieved list of profiles or not
+        :param bool ignore: Specify whether to ignore the invitation of the retrieved list of profiles or not
+        :raises ValueError: if both accept and ignore are truthful
+
+        .. _RECEIVED_INVITATIONS: https://www.linkedin.com/mynetwork/invitation-manager/
+        """
         if accept and ignore:
             raise ValueError('accept and ignore cannot be set to True at the same time')
 
@@ -601,8 +688,8 @@ class ConnectionHandler:
             .until(EC.presence_of_element_located((By.CLASS_NAME, received_invitations_configuration['nameClass'])))
 
         people = driver \
-            .find_element_by_class_name(received_invitations_configuration['invitationListClass']) \
-            .find_elements_by_tag_name('li')
+            .find_element(By.CLASS_NAME, received_invitations_configuration['invitationListClass']) \
+            .find_elements(By.TAG_NAME, 'li')
 
         names = []
         headlines = []
@@ -611,17 +698,17 @@ class ConnectionHandler:
         for person in people:
             names.append(
                 person
-                .find_element_by_class_name(received_invitations_configuration['nameClass'])
+                .find_element(By.CLASS_NAME, received_invitations_configuration['nameClass'])
                 .get_attribute('innerText')
             )
             headlines.append(
                 person
-                .find_element_by_class_name(received_invitations_configuration['headlineClass'])
+                .find_element(By.CLASS_NAME, received_invitations_configuration['headlineClass'])
                 .get_attribute('innerText')
             )
             links.append(
                 person
-                .find_element_by_class_name(received_invitations_configuration['linkClass'])
+                .find_element(By.CLASS_NAME, received_invitations_configuration['linkClass'])
                 .get_attribute('href')
             )
 
@@ -629,13 +716,13 @@ class ConnectionHandler:
                 accept_button = person.find_element(
                     By.XPATH,
                     '//*[text()="' + received_invitations_configuration['acceptInnerHTML'] + '"]'
-                ).find_element_by_xpath('..')
+                ).find_element(By.XPATH, '..')
                 accept_button.click()
 
                 accept_confirmation_button = person.find_element(
                     By.XPATH,
                     '//*[text()="' + received_invitations_configuration['acceptConfirmationInnerHTML'] + '"]'
-                ).find_element_by_xpath('..')
+                ).find_element(By.XPATH, '..')
                 accept_confirmation_button.click()
                 sleep(received_invitations_configuration['acceptDelay'])
 
@@ -643,13 +730,13 @@ class ConnectionHandler:
                 ignore_button = person.find_element(
                     By.XPATH,
                     '//*[text()="' + received_invitations_configuration['ignoreInnerHTML'] + '"]'
-                ).find_element_by_xpath('..')
+                ).find_element(By.XPATH, '..')
                 ignore_button.click()
 
                 ignore_confirmation_button = person.find_element(
                     By.XPATH,
                     '//*[text()="' + received_invitations_configuration['ignoreConfirmationInnerHTML'] + '"]'
-                ).find_element_by_xpath('..')
+                ).find_element(By.XPATH, '..')
                 ignore_confirmation_button.click()
                 sleep(received_invitations_configuration['ignoreDelay'])
 
@@ -663,6 +750,14 @@ class ConnectionHandler:
 
     @staticmethod
     def handle_sent_invitations(withdraw: bool = False):
+        """
+        Iterates through profiles in the `sent invitations page <SENT_INVITATIONS_>`_.
+
+        :param bool withdraw: Specify whether to withdraw the invitation sent to the retrieved list of profiles or not
+        :raises ValueError: if both accept and ignore are truthful
+
+        .. _SENT_INVITATIONS: https://www.linkedin.com/mynetwork/invitation-manager/sent/
+        """
         sent_invitations_configuration = \
             ConfigurationHandler.get_configuration()['endpoints']['sentInvitations']
 
@@ -675,8 +770,8 @@ class ConnectionHandler:
             .until(EC.presence_of_element_located((By.CLASS_NAME, sent_invitations_configuration['nameClass'])))
 
         people = driver \
-            .find_element_by_class_name(sent_invitations_configuration['invitationListClass']) \
-            .find_elements_by_tag_name('li')
+            .find_element(By.CLASS_NAME, sent_invitations_configuration['invitationListClass']) \
+            .find_elements(By.TAG_NAME, 'li')
 
         names = []
         headlines = []
@@ -685,17 +780,17 @@ class ConnectionHandler:
         for person in people:
             names.append(
                 person
-                .find_element_by_class_name(sent_invitations_configuration['nameClass'])
+                .find_element(By.CLASS_NAME, sent_invitations_configuration['nameClass'])
                 .get_attribute('innerText')
             )
             headlines.append(
                 person
-                .find_element_by_class_name(sent_invitations_configuration['headlineClass'])
+                .find_element(By.CLASS_NAME, sent_invitations_configuration['headlineClass'])
                 .get_attribute('innerText')
             )
             links.append(
                 person
-                .find_element_by_class_name(sent_invitations_configuration['linkClass'])
+                .find_element(By.CLASS_NAME, sent_invitations_configuration['linkClass'])
                 .get_attribute('href')
             )
 
@@ -703,13 +798,13 @@ class ConnectionHandler:
                 withdraw_button = person.find_element(
                     By.XPATH,
                     '//*[text()="' + sent_invitations_configuration['withdrawInnerHTML'] + '"]'
-                ).find_element_by_xpath('..')
+                ).find_element(By.XPATH, '..')
                 withdraw_button.click()
 
                 withdraw_confirmation_button = person.find_element(
                     By.XPATH,
                     '//*[text()="' + sent_invitations_configuration['withdrawConfirmationInnerHTML'] + '"]'
-                ).find_element_by_xpath('..')
+                ).find_element(By.XPATH, '..')
                 withdraw_confirmation_button.click()
                 sleep(sent_invitations_configuration['withdrawDelay'])
 

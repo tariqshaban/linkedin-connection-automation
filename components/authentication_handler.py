@@ -7,15 +7,36 @@ from providers.driver_handler import DriverHandler
 
 
 class AuthenticationHandler:
+    """
+    Static methods which handles logging into LinkedIn platform.
+
+    Methods
+    -------
+        __request_credentials() -> list[str]:
+            Handles credentials acquisition directly from the console stream.
+        login():
+            Attempts to log in to LinkedIn with the provided credentials, fetches the credentials from endpoints.longin
+            in config.json, if empty, calls __request_credentials().
+    """
 
     @staticmethod
-    def __request_credentials():
+    def __request_credentials() -> list[str]:
+        """
+        Handles credentials acquisition directly from the console stream.
+
+        :returns: The acquired username and password
+        :rtype: list[str]
+        """
         username = input('Please insert your email or phone number:\n')
         password = pyautogui.password(title='Please insert your password:', mask='*')
         return [username, password]
 
     @staticmethod
     def login():
+        """
+        Attempts to log in to LinkedIn with the provided credentials, fetches the credentials from endpoints.longin
+        in config.json, if empty, calls __request_credentials().
+        """
         login_configuration = ConfigurationHandler.get_configuration()['endpoints']['longin']
 
         username = login_configuration['username']
